@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #13132B;
+  --color-foreground: #ffffff;
+  --color-card: #1C1C3A;
+  --color-card-hover: #24244A;
+  --color-border: #2A2A50;
+  --color-teal: #4ECDC4;
+  --color-purple: #9B5DE5;
+  --color-green: #00F5A0;
+  --color-green-dim: #00C97F;
+  --color-muted: #8888AA;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #13132B;
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #4ECDC4, #9B5DE5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Green glow button */
+.btn-primary {
+  background: transparent;
+  border: 2px solid #00F5A0;
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 12px 32px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+  text-align: center;
+}
+.btn-primary:hover {
+  background: #00F5A0;
+  color: #13132B;
+  box-shadow: 0 0 20px rgba(0, 245, 160, 0.4);
+}
+
+/* Card style */
+.game-card {
+  background: #1C1C3A;
+  border: 1px solid #2A2A50;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.game-card:hover {
+  border-color: #4ECDC4;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(78, 205, 196, 0.2);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #13132B; }
+::-webkit-scrollbar-thumb { background: #2A2A50; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4ECDC4; }
