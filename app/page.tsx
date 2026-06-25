@@ -6,6 +6,8 @@ import Hero from "./components/Hero";
 import GameCard from "./components/GameCard";
 import Footer from "./components/Footer";
 import { Search, Loader2 } from "lucide-react";
+// 1. KITA IMPORT fungsi yang udah kita bikin di jembatan service tadi, Sya!
+import { getGameCategories } from "../services/gameServices";
 
 interface Category {
   id: number;
@@ -26,11 +28,12 @@ export default function HomePage() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`);
-        if (!res.ok) throw new Error("Gagal mengambil data game");
-        const data: Category[] = await res.json();
-        // Filter hanya yang aktif
-        setCategories(data.filter((c) => c.isActive));
+        
+        // 2. GANTI fetch mentah bawaan Abi pake service kita. Jauh lebih simpel & modular!
+        const data = await getGameCategories();
+        
+        // Filter hanya yang aktif sesuai kemauan logic awal Abi
+        setCategories(data.filter((c: Category) => c.isActive));
       } catch (err) {
         setError("Tidak dapat terhubung ke server. Pastikan backend sudah berjalan.");
         console.error(err);
