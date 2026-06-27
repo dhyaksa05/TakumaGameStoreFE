@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
+// 1. Mengimpor generator QR Code SVG asli, anti-blokir browser!
+import { QRCodeSVG } from 'qrcode.react'; 
 
 interface Transaksi {
   id: string;
@@ -15,6 +17,7 @@ interface Transaksi {
 export default function CekPesananPage() {
   const [daftarTransaksi, setDaftarTransaksi] = useState<Transaksi[]>([]);
   const [loading, setLoading] = useState(true);
+  const [idTerpilih, setIdTerpilih] = useState<string | null>(null);
 
   const fetchSemuaTransaksi = async () => {
     try {
@@ -36,13 +39,33 @@ export default function CekPesananPage() {
     return () => clearInterval(interval);
   }, []);
 
+  const transaksiTerpilih = daftarTransaksi.find((t) => t.id === idTerpilih);
+
+  const handleSimulasiLunasDariRiwayat = async (id: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions/${id}/status?status=SUCCESS`, {
+        method: 'PUT',
+      });
+
+      if (response.ok) {
+        alert(`Transaksi #${id} Berhasil Dilunasi!`);
+        fetchSemuaTransaksi();
+      } else {
+        alert('Gagal mengubah status transaksi.');
+      }
+    } catch (error) {
+      console.error('Error simulasi:', error);
+      alert('Gagal menghubungi server.');
+    }
+  };
+
   return (
     <>
       <Navbar />
       <div className="max-w-4xl mx-auto my-10 p-6 bg-slate-900 border border-slate-800 rounded-xl text-white space-y-6 shadow-md">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-blue-400">📋 Semua Riwayat Transaksi</h1>
-          <p className="text-xs text-slate-400 mt-1">Daftar pemantauan status transaksi real-time terintegrasi database</p>
+          <p className="text-xs text-slate-400 mt-1">Klik pada baris transaksi berstatus PENDING untuk memproses pembayaran</p>
         </div>
 
         {loading ? (
@@ -62,8 +85,12 @@ export default function CekPesananPage() {
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {daftarTransaksi.map((trx) => (
-                  <tr key={trx.id} className="hover:bg-slate-800/40 transition">
-                    <td className="px-4 py-3 font-mono font-semibold text-yellow-400">{trx.id}</td>
+                  <tr 
+                    key={trx.id} 
+                    onClick={() => setIdTerpilih(trx.id)}
+                    className="hover:bg-slate-800/60 cursor-pointer transition"
+                  >
+                    <td className="px-4 py-3 font-mono font-semibold text-yellow-400">#{trx.id}</td>
                     <td className="px-4 py-3 text-slate-200">
                       {trx.targetId || trx.userId} <span className="text-slate-500 text-xs">({trx.zoneId || '-'})</span>
                     </td>
@@ -73,7 +100,7 @@ export default function CekPesananPage() {
                         className={`inline-block font-bold uppercase px-3 py-1 rounded text-[10px] tracking-wider ${
                           trx.status === 'SUCCESS'
                             ? 'bg-green-500 text-white shadow'
-                            : 'bg-yellow-500 text-slate-900 shadow'
+                            : 'bg-yellow-500 text-slate-900 shadow animate-pulse'
                         }`}
                       >
                         {trx.status === 'SUCCESS' ? 'LUNAS' : 'PENDING'}
@@ -86,6 +113,55 @@ export default function CekPesananPage() {
           </div>
         )}
       </div>
+
+      {idTerpilih && transaksiTerpilih && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full text-white text-center space-y-4 shadow-2xl relative">
+            
+            <button 
+              onClick={() => setIdTerpilih(null)}
+              className="absolute top-3 right-4 text-slate-400 hover:text-white text-xl font-bold p-2 transition"
+            >
+              ✕
+            </button>
+
+            <h3 className="text-xl font-bold text-blue-400">Detail Transaksi #{transaksiTerpilih.id}</h3>
+            
+            <div className="bg-slate-800 p-3 rounded-lg text-xs space-y-1 text-left border border-slate-700 font-mono">
+              <p><span className="text-slate-400">User ID:</span> {transaksiTerpilih.targetId || transaksiTerpilih.userId}</p>
+              <p><span className="text-slate-400">Zone ID:</span> {transaksiTerpilih.zoneId || '-'}</p>
+              <p><span className="text-slate-400">Metode:</span> {transaksiTerpilih.paymentMethod}</p>
+            </div>
+
+            {/* 2. GENERATOR KODE QR ASLI DAN RAPAT: Digambar langsung lewat kode program lokal, 100% WAJIB MUNCUL */}
+            <div className="bg-white p-4 rounded-xl inline-block my-2 mx-auto shadow-inner">
+              <QRCodeSVG 
+                value={`https://takumagamestore.com{transaksiTerpilih.id}`} 
+                size={170}
+                bgColor={"#ffffff"}
+                fgColor={"#000000"}
+                level={"M"}
+              />
+            </div>
+
+            <div>
+              <p className="text-xs text-slate-400 mb-2">Status Saat Ini:</p>
+              <span className={`font-bold uppercase px-4 py-1 rounded text-xs ${transaksiTerpilih.status === 'SUCCESS' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-slate-900'}`}>
+                {transaksiTerpilih.status === 'SUCCESS' ? '🟢 LUNAS' : '⏳ PENDING'}
+              </span>
+            </div>
+
+            {transaksiTerpilih.status === 'PENDING' && (
+              <button
+                onClick={() => handleSimulasiLunasDariRiwayat(transaksiTerpilih.id)}
+                className="w-full mt-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition shadow-lg"
+              >
+                Set Lunas (Proses Selesai)
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }
