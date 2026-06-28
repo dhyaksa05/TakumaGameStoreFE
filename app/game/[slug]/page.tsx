@@ -88,7 +88,7 @@ export default function TopupPage() {
                         const prodRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/category/${found.id}`);
                         if (prodRes.ok) {
                             const prodData: Product[] = await prodRes.json();
-                          //  if (prodData.length > 0) setProducts(prodData.filter((p) => p.isAvailable));
+                            //  if (prodData.length > 0) setProducts(prodData.filter((p) => p.isAvailable));
                         }
                     }
                 }
@@ -114,43 +114,46 @@ export default function TopupPage() {
         return Object.keys(newErrors).length === 0;
     };
 
-      const handleBayar = async () => {
-    // Validasi form bawaan asli tim Anda (jangan dihapus)
-    if (!validateAll()) return;
+    const handleBayar = async () => {
+        // Validasi form bawaan asli tim Anda (jangan dihapus)
+        if (!validateAll()) return;
 
-    try {
-      // Mengirim data transaksi ke backend Spring Boot Port 8081
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: targetId,
-          productId: selectedProduct!.id, // Menggunakan ID produk dinamis sesuai database laptop yang menjalankan
-          targetId: targetId,
-          zoneId: zoneId,
-          paymentMethod: "QRIS"
-        }),
-      });
+        try {
+            // Mengirim data transaksi ke backend Spring Boot Port 8081
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: null,
+                    productId: selectedProduct!.id, // Menggunakan ID produk dinamis sesuai database laptop yang menjalankan
+                    targetId: targetId,
+                    zoneId: zoneId,
+                    paymentMethod: "QRIS"
+                }),
+            });
 
-      const data = await response.json();
+            const text = await response.text();
+            console.log("Response status:", response.status);
+            console.log("Response body:", text);
+            const data = text ? JSON.parse(text) : {};
 
-      if (response.ok) {
-        // Simpan tautan gambar QRIS dan ID transaksi dari backend ke memori browser sementara
-        localStorage.setItem('checkout_qrCodeUrl', data.qrCodeUrl);
-        localStorage.setItem('checkout_transactionId', data.id || data.transactionId);
-        
-        // Alihkan halaman secara otomatis ke halaman pembayaran baru Anda
-        router.push('/pembayaran');
-      } else {
-        alert("Gagal memproses checkout: " + (data.message || "Terjadi kesalahan server"));
-      }
-    } catch (error) {
-      console.error("Error checkout:", error);
-      alert("Gagal terhubung ke server backend.");
-    }
-  };
+            if (response.ok) {
+                // Simpan tautan gambar QRIS dan ID transaksi dari backend ke memori browser sementara
+                localStorage.setItem('checkout_qrCodeUrl', data.qrCodeUrl);
+                localStorage.setItem('checkout_transactionId', data.id || data.transactionId);
+
+                // Alihkan halaman secara otomatis ke halaman pembayaran baru Anda
+                router.push('/pembayaran');
+            } else {
+                alert("Gagal memproses checkout: " + (data.message || "Terjadi kesalahan server"));
+            }
+        } catch (error) {
+            console.error("Error checkout:", error);
+            alert("Gagal terhubung ke server backend.");
+        }
+    };
 
 
     const inputStyle = (hasError: boolean) => ({
