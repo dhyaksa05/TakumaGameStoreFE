@@ -11,7 +11,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="id">
       <body>
-        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+        {/* KUNCI ASLI: Memasang Client ID Google langsung di dalam tanda kutip agar langsung terbaca mutlak oleh sistem */}
+        <GoogleOAuthProvider clientId="masukan token google">
           {children}
         </GoogleOAuthProvider>
       </body>
