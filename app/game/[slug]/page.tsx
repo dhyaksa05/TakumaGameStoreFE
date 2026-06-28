@@ -114,24 +114,27 @@ export default function TopupPage() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleBayar = async () => {
+   const handleBayar = async () => {
         // Validasi form bawaan asli tim Anda (jangan dihapus)
         if (!validateAll()) return;
 
         try {
-            // Mengirim data transaksi ke backend Spring Boot Port 8081
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
+            // Mengirim data transaksi ke backend Spring Boot
+            // IMPROVEMENT: Gunakan env variable agar dinamis seperti saat fetch kategori
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+            
+            const response = await fetch(`${apiUrl}/api/transactions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId: null,
-                    productId: selectedProduct!.id, // Menggunakan ID produk dinamis sesuai database laptop yang menjalankan
-                    targetId: targetId,
-                    zoneId: zoneId,
+                    userId: 1, // TODO: Nanti ganti pakai ID user asli dari localStorage/Auth session kalau udah buat fitur login
+                    productId: selectedProduct?.id, // FIX: Mengambil ID produk yang beneran diklik user
+                    gameUserId: targetId, // FIX: Memanggil state 'targetId' yang benar
+                    zoneId: zoneId, 
                     paymentMethod: "QRIS"
-                }),
+                })
             });
 
             const text = await response.text();
