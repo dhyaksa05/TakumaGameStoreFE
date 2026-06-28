@@ -143,9 +143,9 @@ export default function TopupPage() {
             const data = text ? JSON.parse(text) : {};
 
             if (response.ok) {
-                // Simpan tautan gambar QRIS dan ID transaksi dari backend ke memori browser sementara
-                localStorage.setItem('checkout_qrCodeUrl', data.qrCodeUrl);
-                localStorage.setItem('checkout_transactionId', data.id || data.transactionId);
+                // FIX: Ambil dari variabel 'data', bukan 'response.data'
+                localStorage.setItem('checkout_snapToken', data.snapToken);
+                localStorage.setItem('checkout_transactionId', data.id);
 
                 // Alihkan halaman secara otomatis ke halaman pembayaran baru Anda
                 router.push('/pembayaran');

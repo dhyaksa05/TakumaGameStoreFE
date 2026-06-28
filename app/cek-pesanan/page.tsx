@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 // 1. Mengimpor generator QR Code SVG asli, anti-blokir browser!
+// PASTIKAN LO UDAH JALANIN: npm install qrcode.react
 import { QRCodeSVG } from 'qrcode.react'; 
 
 interface Transaksi {
@@ -21,7 +22,10 @@ export default function CekPesananPage() {
 
   const fetchSemuaTransaksi = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`);
+      // FIX 1: Kasih fallback URL localhost:8081 biar gak nembak ke undefined
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+      const response = await fetch(`${apiUrl}/api/transactions`);
+      
       if (response.ok) {
         const data = await response.json();
         setDaftarTransaksi(Array.isArray(data) ? data.reverse() : []);
@@ -39,11 +43,14 @@ export default function CekPesananPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const transaksiTerpilih = daftarTransaksi.find((t) => t.id === idTerpilih);
+  // FIX 2: Konversi kedua ID jadi String biar gak eror pas dicocokkan (Number vs String)
+  const transaksiTerpilih = daftarTransaksi.find((t) => String(t.id) === String(idTerpilih));
 
   const handleSimulasiLunasDariRiwayat = async (id: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions/${id}/status?status=SUCCESS`, {
+      // FIX 1: Kasih fallback URL localhost:8081 juga di sini
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+      const response = await fetch(`${apiUrl}/api/transactions/${id}/status?status=SUCCESS`, {
         method: 'PUT',
       });
 
@@ -87,7 +94,7 @@ export default function CekPesananPage() {
                 {daftarTransaksi.map((trx) => (
                   <tr 
                     key={trx.id} 
-                    onClick={() => setIdTerpilih(trx.id)}
+                    onClick={() => setIdTerpilih(String(trx.id))} // FIX 2: Pastikan yang diset adalah String
                     className="hover:bg-slate-800/60 cursor-pointer transition"
                   >
                     <td className="px-4 py-3 font-mono font-semibold text-yellow-400">#{trx.id}</td>
@@ -136,7 +143,7 @@ export default function CekPesananPage() {
             {/* 2. GENERATOR KODE QR ASLI DAN RAPAT: Digambar langsung lewat kode program lokal, 100% WAJIB MUNCUL */}
             <div className="bg-white p-4 rounded-xl inline-block my-2 mx-auto shadow-inner">
               <QRCodeSVG 
-                value={`https://takumagamestore.com{transaksiTerpilih.id}`} 
+                value={`https://takumagamestore.com${transaksiTerpilih.id}`} 
                 size={170}
                 bgColor={"#ffffff"}
                 fgColor={"#000000"}
