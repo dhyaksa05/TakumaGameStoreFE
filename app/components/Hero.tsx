@@ -188,7 +188,7 @@ export default function Hero() {
             />
             {/* Logo placeholder — ganti src dengan path logo asli lo */}
             <img
-              src="/logo.jpg"
+              src="/logo.png"
               alt="Takuma Game Store"
               style={{
                 width: "240px",
